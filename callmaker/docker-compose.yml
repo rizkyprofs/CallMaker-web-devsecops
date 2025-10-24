@@ -1,0 +1,75 @@
+version: "3.8"
+services:
+  backend:
+    build: ./server
+    ports:
+      - "5000:5000"
+    env_file: .env
+    depends_on:
+      - db
+    networks:
+      - callnet
+
+  client:
+    build: ./client
+    ports:
+      - "3000:3000"
+    networks:
+      - callnet
+    depends_on:
+      - backend
+
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - callnet
+
+  jenkins:
+    image: jenkins/jenkins:lts
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+    networks:
+      - callnet
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    networks:
+      - callnet
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3001:3000"
+    networks:
+      - callnet
+
+  cadvisor:
+    image: gcr.io/google-containers/cadvisor:latest
+    ports:
+      - "8081:8080"
+    networks:
+      - callnet
+
+volumes:
+  db_data:
+  jenkins_home:
+
+networks:
+  callnet:
+    driver: bridge

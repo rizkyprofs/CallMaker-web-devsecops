@@ -1,0 +1,3 @@
+#!/bin/bash
+echo "Run security scans (example)"
+# e.g., docker run --rm owasp/dependency-check ...

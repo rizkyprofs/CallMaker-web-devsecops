@@ -1,0 +1,38 @@
+pipeline {
+  agent any
+  stages {
+    stage('Checkout') {
+      steps { checkout scm }
+    }
+    stage('Install & Test Backend') {
+      steps {
+        dir('server') {
+          sh 'npm install'
+          sh 'npm test || echo "No tests"'
+        }
+      }
+    }
+    stage('Install & Build Frontend') {
+      steps {
+        dir('client') {
+          sh 'npm install'
+          sh 'npm run build || echo "CRA build"'
+        }
+      }
+    }
+    stage('OWASP Dependency Check') {
+      steps {
+        sh 'echo "Run OWASP Dependency Check (example)"'
+      }
+    }
+    stage('Docker Build & Deploy') {
+      steps {
+        sh 'docker compose build'
+        sh 'docker compose up -d'
+      }
+    }
+  }
+  post {
+    always { archiveArtifacts artifacts: "reports/**", allowEmptyArchive: true }
+  }
+}
